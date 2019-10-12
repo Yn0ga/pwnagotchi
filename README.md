@@ -4,136 +4,49 @@
   <p align="center">
     <a href="https://github.com/evilsocket/pwnagotchi/releases/latest"><img alt="Release" src="https://img.shields.io/github/release/evilsocket/pwnagotchi.svg?style=flat-square"></a>
     <a href="https://github.com/evilsocket/pwnagotchi/blob/master/LICENSE.md"><img alt="Software License" src="https://img.shields.io/badge/license-GPL3-brightgreen.svg?style=flat-square"></a>
+    <a href="https://github.com/evilsocket/pwnagotchi/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/evilsocket/pwnagotchi"/></a>
     <a href="https://travis-ci.org/evilsocket/pwnagotchi"><img alt="Travis" src="https://img.shields.io/travis/evilsocket/pwnagotchi/master.svg?style=flat-square"></a>
+    <a href="https://pwnagotchi.herokuapp.com/"><img alt="Slack" src="https://pwnagotchi.herokuapp.com/badge.svg"></a>
+    <a href="https://twitter.com/intent/follow?screen_name=pwnagotchi"><img src="https://img.shields.io/twitter/follow/pwnagotchi?style=social&logo=twitter" alt="follow on Twitter"></a>
   </p>
 </p>
 
-[Pwnagotchi](https://twitter.com/pwnagotchi) is an "AI" that learns from the WiFi environment and instruments bettercap in order to maximize the WPA key material (any form of handshake that is crackable, including [PMKIDs](https://www.evilsocket.net/2019/02/13/Pwning-WiFi-networks-with-bettercap-and-the-PMKID-client-less-attack/), full and half WPA handshakes) captured.
+[Pwnagotchi](https://twitter.com/pwnagotchi) is an [A2C](https://hackernoon.com/intuitive-rl-intro-to-advantage-actor-critic-a2c-4ff545978752)-based "AI" leveraging [bettercap](https://www.bettercap.org/) that learns from its surrounding WiFi environment in order to maximize the crackable WPA key material it captures (either passively, or by performing deauthentication and association attacks). This material is collected as PCAP files containing any form of handshake supported by [hashcat](https://hashcat.net/hashcat/), including [PMKIDs](https://www.evilsocket.net/2019/02/13/Pwning-WiFi-networks-with-bettercap-and-the-PMKID-client-less-attack/), 
+full and half WPA handshakes.
 
-![handshake](https://i.imgur.com/pdA4vCZ.png)
+![ui](https://i.imgur.com/c7xh4hN.png)
 
-Specifically, it's using an [LSTM with MLP feature extractor](https://stable-baselines.readthedocs.io/en/master/modules/policies.html#stable_baselines.common.policies.MlpLstmPolicy) as its policy network for the [A2C agent](https://stable-baselines.readthedocs.io/en/master/modules/a2c.html), here is [a very good intro](https://hackernoon.com/intuitive-rl-intro-to-advantage-actor-critic-a2c-4ff545978752) on the subject.
+Instead of merely playing [Super Mario or Atari games](https://becominghuman.ai/getting-mario-back-into-the-gym-setting-up-super-mario-bros-in-openais-gym-8e39a96c1e41?gi=c4b66c3d5ced) like most reinforcement learning based "AI" *(yawn)*, Pwnagotchi tunes [its own parameters](https://github.com/evilsocket/pwnagotchi/blob/master/pwnagotchi/defaults.yml#L73) over time to **get better at pwning WiFi things** in the environments you expose it to. 
 
-Instead of playing [Super Mario or Atari games](https://becominghuman.ai/getting-mario-back-into-the-gym-setting-up-super-mario-bros-in-openais-gym-8e39a96c1e41?gi=c4b66c3d5ced), pwnagotchi will tune over time [its own parameters](https://github.com/evilsocket/pwnagotchi/blob/master/sdcard/rootfs/root/pwnagotchi/config.yml#L54), effectively learning to get better at pwning WiFi things. **Keep in mind:** unlike the usual RL simulations, pwnagotchi learns over time (where a single epoch can last from a few seconds to minutes, depending on how many access points and client stations are visible), do not expect it to perform amazingly well at the beginning, as it'll be exploring several combinations of parameters ... but listen to it when it's bored, bring it with you and have it observe new networks and capture new handshakes and you'll see :)
+More specifically, Pwnagotchi is using an [LSTM with MLP feature extractor](https://stable-baselines.readthedocs.io/en/master/modules/policies.html#stable_baselines.common.policies.MlpLstmPolicy) as its policy network for the [A2C agent](https://stable-baselines.readthedocs.io/en/master/modules/a2c.html). If you're unfamiliar with A2C, here is [a very good introductory explanation](https://hackernoon.com/intuitive-rl-intro-to-advantage-actor-critic-a2c-4ff545978752) (in comic form!) of the basic principles behind how Pwnagotchi learns. (You can read more about how Pwnagotchi learns in the [Usage](https://www.pwnagotchi.ai/usage/#training-the-ai) doc.)
 
-Multiple units can talk to each other, advertising their own presence using a parasite protocol I've built on top of the existing dot11 standard, by broadcasting custom information elements. Over time, two or more units learn to cooperate if they detect each other's presence, by dividing the available channels among them.
+**Keep in mind:** Unlike the usual RL simulations, Pwnagotchi actually learns over time. Time for a Pwnagotchi is measured in epochs; a single epoch can last from a few seconds to minutes, depending on how many access points and client stations are visible. Do not expect your Pwnagotchi to perform amazingly well at the very beginning, as it will be [exploring](https://hackernoon.com/intuitive-rl-intro-to-advantage-actor-critic-a2c-4ff545978752) several combinations of [key parameters](https://www.pwnagotchi.ai/usage/#training-the-ai) to determine ideal adjustments for pwning the particular environment you are exposing it to during its beginning epochs ... but **definitely listen to your Pwnagotchi when it tells you it's bored!** Bring it into novel WiFi environments with you and have it observe new networks and capture new handshakes—and you'll see. :)
 
-![peers](https://i.imgur.com/Ywr5aqx.png)
+Multiple units within close physical proximity can "talk" to each other, advertising their own presence to each other by broadcasting custom information elements using a parasite protocol I've built on top of the existing dot11 standard. Over time, two or more units trained together will learn to cooperate upon detecting each other's presence by dividing the available channels among them for optimal pwnage.
 
-Depending on the status of the unit, several states and states transitions are configurable and represented on the display as different moods, expressions and sentences.
+## Why does Pwnagotchi exist?
 
-If instead you just want to use your own parameters and save battery and CPU cycles, you can disable the AI in `config.yml` and enjoy an automated deauther, WPA handshake sniffer and portable bettercap + webui dedicated hardware.
+For hackers to learn reinforcement learning, WiFi networking, and have an excuse to get out for more walks. Also? **It's cute as f---**.
 
-**NOTE:** The software **requires at least bettercap v2.25**.
-
-![units](https://i.imgur.com/MStjXZF.png)
-
-## Why
-
-For hackers to learn reinforcement learning, WiFi networking and have an excuse to take a walk more often. And **it's cute as f---**.
+**In case you're curious about the name:** *Pwnagotchi* is a portmanteau of *pwn* (which we shouldn't have to explain if you are interested in this project :kissing_heart:) and *-gotchi*. It is a nostalgic reference made in homage to a very popular children's toy from the 1990s called the [Tamagotchi](https://en.wikipedia.org/wiki/Tamagotchi). The Tamagotchi (たまごっち, derived from *tamago* (たまご) "egg" + *uotchi* (ウオッチ) "watch") is a cultural touchstone for many Millennial hackers as a formative electronic toy from our collective childhoods. Were you lucky enough to possess a Tamagotchi as a kid? Well, with your Pwnagotchi, you too can enjoy the nostalgic delight of being strangely emotionally attached to a handheld automata *yet again!* Except, this time around...you get to #HackThePlanet. >:D
 
 ## Documentation
+---
+:warning: **THE FOLLOWING DOCUMENTATION IS BEING PREPARED FOR THE v1.0 RELEASE OF PWNAGOTCHI. Since this effort is an active (and unstable) work-in-progress, the docs displayed here are in various stages of [in]completion. There will be dead links and placeholders throughout as we are still building things out in preparation for the v1.0 release.** :warning:
 
-**THIS IS STILL ALPHA STAGE SOFTWARE, IF YOU DECIDE TO TRY TO USE IT, YOU ARE ON YOUR OWN, NO SUPPORT WILL BE PROVIDED, NEITHER FOR INSTALLATION OR FOR BUGS**
+**IMPORTANT NOTE:** If you'd like to alphatest Pwnagotchi and are trying to get yours up and running while the project is still very unstable, please understand that the documentation here may not reflect what is currently implemented. If you have questions, ask the community of alphatesters in the [official Pwnagotchi Slack](https://pwnagotchi.herokuapp.com). The Pwnagotchi dev team is entirely focused on the v1.0 release and will NOT be providing support for alphatesters trying to get their Pwnagotchis working in the meantime. All technical support during this period of development is being provided by your fellow alphatesters in the Slack (thanks, everybody! :heart:).
 
-However, there's [a Slack channel](https://join.slack.com/t/pwnagotchi/shared_invite/enQtNzc4NzY3MDE2OTAzLTg5NmNmNDJiMDM3ZWFkMWUwN2Y5NDk0Y2JlZWZjODlhMmRhNDZiOGMwYjJhM2UzNzA3YjA5NjJmZGY5NGI5NmI).
-### Hardware
+https://www.pwnagotchi.ai
 
-- Raspberry Pi Zero W
-- A decent power bank (with 1500 mAh you get ~2 hours with AI on)
+## Links
 
-#### Display (optional)
-
-The display is optional if you connect to `usb0` (by using the data port on the unit) and point your browser to the web ui (see config.yml).
-
-The supported models are:
-
-- [Waveshare eInk Display (both V1 and V2)](https://www.waveshare.com/2.13inch-e-paper-hat.htm)
-- [Pimoroni Inky pHAT](https://shop.pimoroni.com/products/inky-phat)
-- [PaPiRus eInk Screen](https://uk.pi-supply.com/products/papirus-zero-epaper-screen-phat-pi-zero)
-
-### Software
-
-- Raspbian + [nexmon patches](https://re4son-kernel.com/re4son-pi-kernel/) for monitor mode, or any Linux with a monitor mode enabled interface (if you tune config.yml).
-
-**Do not try with Kali on the Raspberry Pi 0 W, it is compiled without hardware floating point support and TensorFlow is simply not available for it, use Raspbian.**
-
-#### Automatically create an image
-
-You can use the `scripts/create_sibling.sh` script to create an - ready to flash - rasbian image with pwnagotchi.
-
-```shell
-usage: ./scripts/create_sibling.sh [OPTIONS]
-
-  Options:
-    -n <name>    # Name of the pwnagotchi (default: pwnagotchi)
-    -i <file>    # Provide the path of an already downloaded raspbian image
-    -o <file>    # Name of the img-file (default: pwnagotchi.img)
-    -s <size>    # Size which should be added to second partition (in Gigabyte) (default: 4)
-    -v <version> # Version of raspbian (Supported: latest; default: latest)
-    -p           # Only run provisioning (assumes the image is already mounted)
-    -d           # Only run dependencies checks
-    -h           # Show this help
-```
-
-#### Host Connection Share
-
-If you connect to the unit via `usb0` (thus using the data port), you might want to use the `scripts/linux_connection_share.sh` script to bring the interface up on your end and share internet connectivity from another interface, so you can update the unit and generally download things from the internet on it.
-
-### UI
-
-The UI is available either via display if installed, or via http://pwnagotchi.local:8080/ if you connect to the unit via `usb0` and set a static address on the network interface (change `pwnagotchi` with the hostname of your unit).
-
-![ui](https://i.imgur.com/XgIrcur.png)
-
-* **CH**: Current channel the unit is operating on or `*` when hopping on all channels.
-* **APS**: Number of access points on the current channel and total visible access points.
-* **UP**: Time since the unit has been activated.
-* **PWND**: Number of handshakes captured in this session and number of unique networks we own at least one handshake of, from the beginning.
-* **AUTO**: This indicates that the algorithm is running with AI disabled (or still loading), it disappears once the AI dependencies have been bootrapped and the neural network loaded.
-
-#### Languages
-
-Pwnagotchi is able to speak multiple languages!! Currently supported are:
-
-* **english** (default)
-* german
-
-If you want to add a language use the `language.sh` script.
-If you want to add for example the language **italian** you would type:
-
-```shell
-./scripts/language.sh add it
-# Now make your changes to the file
-# sdcard/rootfs/root/pwnagotchi/scripts/pwnagotchi/locale/it/LC_MESSAGES/voice.po
-./scripts/language.sh compile it
-# DONE
-```
-
-If you changed the `voice.py`- File, the translations need an update. Do it like this:
-
-```shell
-./scripts/language.sh update it
-# Now make your changes to the file (changed lines are marked with "fuzzy")
-# sdcard/rootfs/root/pwnagotchi/scripts/pwnagotchi/locale/it/LC_MESSAGES/voice.po
-./scripts/language.sh compile it
-# DONE
-```
-
-### Random Info
-
-- `hostname` sets the unit name.
-- At first boot, each unit generates a unique RSA keypair that can be used to authenticate advertising packets.
-- **On a rpi0w, it'll take approximately 30 minutes to load the AI**.
-- `/var/log/pwnagotchi.log` is your friend.
-- if connected to a laptop via usb data port, with internet connectivity shared, magic things will happen.
-- checkout the `ui.video` section of the `config.yml` - if you don't want to use a display, you can connect to it with the browser and a cable.
-- If you get `[FAILED] Failed to start Remount Root and Kernel File Systems.` while booting pwnagotchi, make sure
-the `PARTUUID`s for `rootfs` and `boot` partitions are the same in `/etc/fstab`. Use `sudo blkid` to find those values when you are using `create_sibling.sh`.
+&nbsp; | Official Links
+---------|-------
+Slack | [pwnagotchi.slack.com](https://pwnagotchi.herokuapp.com)
+Twitter | [@pwnagotchi](https://twitter.com/pwnagotchi)
+Subreddit | [r/pwnagotchi](https://www.reddit.com/r/pwnagotchi/)
+Website | [pwnagotchi.ai](https://pwnagotchi.ai/)
 
 ## License
 
-`pwnagotchi` is made with ♥  by [@evilsocket](https://twitter.com/evilsocket) and it's released under the GPL3 license.
-
-
-
+`pwnagotchi` is made with ♥  by [@evilsocket](https://twitter.com/evilsocket) and the [amazing dev team](https://github.com/evilsocket/pwnagotchi/graphs/contributors). It is released under the GPL3 license.
